@@ -31,8 +31,8 @@ const direction = new THREE.Vector3();
 const canvas = document.getElementById('canvas');
 const items = document.getElementsByClassName('item');
 
+
 function init() {
-  // 创建相机对象
   camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
   camera.position.y = 2;
   camera.lookAt(0, 1, 1);
@@ -40,12 +40,10 @@ function init() {
   scene.background = new THREE.Color(0x66b6dd);
   cubeList = scene.children;
 
-  // 灯光
   const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
   light.position.set(0.5, 1, 0.75);
   scene.add(light);
 
-  // 控制器
   controls = new PointerLockControls(camera, document.body);
   const blocker = document.getElementById('blocker');
   const instructions = document.getElementById('instructions');
@@ -64,7 +62,6 @@ function init() {
     cross.style.display = 'none'
   });
 
-  // 添加键盘事件
   const onKeyDown = function (event) {
     switch (event.key) {
       case 'W':
@@ -224,7 +221,6 @@ function init() {
   floor.name = 'floor';
   scene.add(floor);
 
-  // 创建渲染器对象
   renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
@@ -246,43 +242,42 @@ function animate() {
   const time = performance.now();
 
   scene.remove(selectedMesh)
-  // 移动及旋转视角
   if (controls.isLocked === true) {
     // 判断移动方向
-    direction.z = Number(moveForward) - Number(moveBackward);
     direction.x = Number(moveRight) - Number(moveLeft);
+    direction.y = Number(moveUp) - Number(moveDown);
+    direction.z = Number(moveForward) - Number(moveBackward);
     direction.normalize();
 
     // 各方向移动速度
     const delta = (time - prevTime) / 1000;
-    if (moveForward || moveBackward) velocity.z -= direction.z * 50.0 * delta;
     if (moveLeft || moveRight) velocity.x -= direction.x * 50.0 * delta;
+    if (moveUp || moveDown) velocity.y -= direction.y * 50.0 * delta;
+    if (moveForward || moveBackward) velocity.z -= direction.z * 50.0 * delta;
     velocity.x -= velocity.x * 10.0 * delta;
     velocity.z -= velocity.z * 10.0 * delta;
 
-
     if (flyMode) {
-      // 飞行模式
+      
       velocity.y -= velocity.y * 10.0 * delta;
       controls.moveRight(-velocity.x * delta);
       controls.moveForward(-velocity.z * delta);
-      camera.position.y += velocity.y * delta;
+      camera.position.y -= velocity.y * delta;
     } else {
-      // 正常模式
+      
       velocity.y -= 9.8 * 10.0 * delta;
       controls.moveRight(-velocity.x * delta);
       controls.moveForward(-velocity.z * delta);
-      controls.getObject().position.y += (velocity.y * delta);
-      if (controls.getObject().position.y < 2) {
+      camera.position.y += velocity.y * delta;
+      if (camera.position.y < 2) {
         velocity.y = 0;
-        controls.getObject().position.y = 2;
+        camera.position.y = 2;
         canJump = true;
       }
     }
   }
   prevTime = time;
 
-  // 高亮选择方块
   raycaster.setFromCamera({ x: 0, y: 0 }, camera)
   const block = raycaster.intersectObjects(cubeList, true);
   if (block.length > 0) {
@@ -299,7 +294,6 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-// 添加方块函数
 const setCube = (coordinate, size, color) => {
   let selectCurrent = color === undefined ? current : color;
   const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -317,7 +311,6 @@ const setCube = (coordinate, size, color) => {
   }
 }
 
-// 删除方块函数
 const deleteCube = (coordinate) => {
   for (const cube of cubeList) {
     if (Array.from(cube.position).toString() === coordinate.toString()) {

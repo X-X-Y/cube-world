@@ -11,7 +11,7 @@ class Circle {
     this.xDistance = Math.random() * 2 > 1 ? Math.random() : -Math.random();
     this.yDistance = Math.random() * 3 > 1 ? Math.random() * 2 : -Math.random() * 2;
   }
-  // 绘制
+  
   draw() {
     ctx.beginPath();
     if (this.x < this.radius) {
@@ -42,6 +42,7 @@ class Circle {
     }
   }
 }
+
 let sequence = [];
 let number = 100;
 function init() {
